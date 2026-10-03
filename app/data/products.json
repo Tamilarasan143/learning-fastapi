@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Tamil",
+    "price": 100,
+    "stock": 10
+  },
+  {
+    "id": 2,
+    "name": "tamil",
+    "price": 100,
+    "stock": 10
+  }
+]
