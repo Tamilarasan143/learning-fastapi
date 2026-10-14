@@ -1,12 +1,14 @@
 from ast import Pass
 from typing import List , Dict , Any
 from app.storage.json_data import read_products , write_products
+from sqlalchemy.orm import Session
+from app.models.product import Product 
 
 class ProductNotFoundError(Exception):
     Pass
 
-def get_products(limit=10)->List[Dict[str,Any]]:
-    return read_products()[:limit]
+def get_products(db:Session):
+    return db.query(Product).all()
 
 def get_product(product_id:int) -> Dict[str,Any]:
     for product in read_products():
@@ -14,19 +16,13 @@ def get_product(product_id:int) -> Dict[str,Any]:
             return product
     raise ProductNotFoundError(f"Product {product_id} not found")
 
-def create_product(product_data:Dict[str,Any]) -> Dict[str,Any]:
-    products = read_products()
-    next_id = max(
-        (product["id"] for product in products),
-        default=0,
-    ) + 1
-    new_product = {
-        "id":next_id,
-         **product_data
-    }
-    products.append(new_product)
-    write_products(products)
-    return new_product
+def create_product(db:Session,product_data):
+   product = Product(**product_data.model_dump())
+   db.add(product)
+   db.commit()
+   db.refresh(product)
+
+   return product
 
 def update_product(product_id: int, product_data: Dict[str, Any],) -> Dict[str,Any]:
     products = read_products()
