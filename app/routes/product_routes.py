@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.product import ProductCreate, ProductResponse
+from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 from app.services.product_services import create_product as create_product_service
 from app.services.product_services import delete_product as delete_product_service
 from app.services.product_services import get_product as get_product_service
 from app.services.product_services import get_products as get_products_service
+from app.services.product_services import patch_product as patch_product_service
 from app.services.product_services import update_product as update_product_service
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -42,6 +43,23 @@ def update_product(
     product_id: int, updated_product: ProductResponse, db: Session = Depends(get_db)
 ):
     product = update_product_service(db, product_id, updated_product)
+
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    return product
+
+
+@router.patch(
+    "/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK
+)
+def patch_update(
+    product_id: int, patch_product: ProductUpdate, db: Session = Depends(get_db)
+):
+    product = patch_product_service(db, product_id, patch_product)
 
     if product is None:
         raise HTTPException(
