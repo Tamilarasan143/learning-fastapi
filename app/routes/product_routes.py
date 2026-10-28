@@ -1,8 +1,16 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
+from app.schemas.product import (
+    ProductCreate,
+    ProductResponse,
+    ProductSortBy,
+    ProductUpdate,
+    SortOrder,
+)
 from app.services.product_services import create_product as create_product_service
 from app.services.product_services import delete_product as delete_product_service
 from app.services.product_services import get_product as get_product_service
@@ -15,13 +23,18 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 @router.get("/", response_model=list[ProductResponse], status_code=status.HTTP_200_OK)
 def get_products(
-    sort_by: str = Query(default="id"),
-    sort_order: str = Query(default="asc"),
+    sort_by: ProductSortBy = Query(default=ProductSortBy.id),
+    sort_order: SortOrder = Query(default=SortOrder.asc),
     limit: int = Query(default=10, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    min_price: Optional[float] = Query(default=None, ge=0),  # noqa: UP045
+    max_price: Optional[float] = Query(default=None, ge=0),  # noqa: UP045
+    in_stock: Optional[bool] = Query(default=None),  # noqa: UP045
     db: Session = Depends(get_db),
 ):
-    return get_products_service(db, limit, offset, sort_by, sort_order)
+    return get_products_service(
+        db, limit, offset, sort_by, sort_order, min_price, max_price, in_stock
+    )
 
 
 @router.get(

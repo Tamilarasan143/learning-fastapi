@@ -2,7 +2,20 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from enum import Enum
 
+
+class ProductSortBy(str, Enum):
+    id = "id"
+    name = "name"
+    price = "price"
+    stock = "stock"
+
+
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
+    
 class ProductCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     price: float = Field(gt=0)

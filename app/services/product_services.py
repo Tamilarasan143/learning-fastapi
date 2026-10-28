@@ -1,23 +1,43 @@
+from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
+from app.schemas.product import ProductSortBy, SortOrder
 
 
-def get_products(db: Session, limit: int, offSet: int, sortBy: str, sortOrder: str):
+def get_products(
+    db: Session,
+    limit: int,
+    offset: int,
+    sort_by: ProductSortBy,
+    sort_order: SortOrder,
+    min_price: Optional[float],  # noqa: UP045
+    max_price: Optional[float],  # noqa: UP045
+    in_stock: Optional[bool],  # noqa: UP045
+):
     sort_columns = {
         "id": Product.id,
         "name": Product.name,
         "price": Product.price,
         "stock": Product.stock,
     }
-    column = sort_columns.get(sortBy, Product.id)
+    column = sort_columns[sort_by.value]
     statement = select(Product)
-    if sortOrder == "desc":
+    if min_price is not None:
+        statement = select(Product).where(Product.price >= min_price)
+    if max_price is not None:
+        statement = select(Product).where(Product.price <= max_price)
+    if in_stock is True:
+        statement = select(Product).where(Product.stock > 0)
+    if in_stock is False:
+        statement = select(Product).where(Product.stock == 0)
+    if sort_order == SortOrder.desc:
         statement = statement.order_by(column.desc())
     else:
         statement = statement.order_by(column.asc())
-    statement = statement.limit(limit).offset(offSet)
+    statement = statement.limit(limit).offset(offset)
     result = db.execute(statement)
     return result.scalars().all()
 
