@@ -48,7 +48,7 @@ def get_product(db: Session, product_id: int):
         result = db.execute(statement).scalar_one_or_none()
         if result is None:
             return None
-        return result.scalar_one_or_none()
+        return result
     except Exception:
         db.rollback()
         raise
