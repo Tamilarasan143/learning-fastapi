@@ -26,13 +26,13 @@ def get_products(
     column = sort_columns[sort_by.value]
     statement = select(Product)
     if min_price is not None:
-        statement = select(Product).where(Product.price >= min_price)
+        statement = statement.where(Product.price >= min_price)
     if max_price is not None:
-        statement = select(Product).where(Product.price <= max_price)
+        statement = statement.where(Product.price <= max_price)
     if in_stock is True:
-        statement = select(Product).where(Product.stock > 0)
+        statement = statement.where(Product.stock > 0)
     if in_stock is False:
-        statement = select(Product).where(Product.stock == 0)
+        statement = statement.where(Product.stock == 0)
     if sort_order == SortOrder.desc:
         statement = statement.order_by(column.desc())
     else:
@@ -49,6 +49,27 @@ def get_product(db: Session, product_id: int):
         if result is None:
             return None
         return result
+    except Exception:
+        db.rollback()
+        raise
+
+
+def get_product_with_department(db: Session, product_id: int):
+    try:
+        statement = select(Product).where(Product.id == product_id)
+        product = db.execute(statement).scalar_one_or_none()
+        if product is None:
+            return None
+        return {
+            "id": product.id,
+            "name": product.name,
+            "department": {
+                "id": product.department.id,
+                "name": product.department.name,
+            }
+            if product.department
+            else None,
+        }
     except Exception:
         db.rollback()
         raise

@@ -1,15 +1,17 @@
 from fastapi import FastAPI
-from app.routes.product_routes import router as products_router
+
+from app.routes import department, product_routes
 
 app = FastAPI(
     title="Learning FastAPI",
     version="1.0.0",
 )
 
-app.include_router(products_router)
+app.include_router(product_routes.router)
+app.include_router(department.router)
 
 
-#Root Folder
+# Root Folder
 @app.get("/")
 def health_check():
     return {"Status": "OK"}

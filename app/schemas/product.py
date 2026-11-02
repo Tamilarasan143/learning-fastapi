@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.department import DepartmentResponse
+
 
 class ProductSortBy(str, Enum):
     id = "id"
@@ -40,3 +42,9 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None  # noqa: UP045
     stock: Optional[int] = None  # noqa: UP045
     department_id: Optional[int] = None  # noqa: UP045
+
+
+class ProductWithDepartmentResponse(BaseModel):
+    id: int
+    name: str
+    department: Optional[DepartmentResponse] = None  # noqa: UP045

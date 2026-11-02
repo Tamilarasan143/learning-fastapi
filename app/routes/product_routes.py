@@ -9,11 +9,15 @@ from app.schemas.product import (
     ProductResponse,
     ProductSortBy,
     ProductUpdate,
+    ProductWithDepartmentResponse,
     SortOrder,
 )
 from app.services.product_services import create_product as create_product_service
 from app.services.product_services import delete_product as delete_product_service
 from app.services.product_services import get_product as get_product_service
+from app.services.product_services import (
+    get_product_with_department as get_product_with_department_service,
+)
 from app.services.product_services import get_products as get_products_service
 from app.services.product_services import patch_product as patch_product_service
 from app.services.product_services import update_product as update_product_service
@@ -46,6 +50,21 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found",
+        )
+    return product
+
+
+@router.get(
+    "/{product_id}/department",
+    response_model=ProductWithDepartmentResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_product_with_department(product_id: int, db: Session = Depends(get_db)):
+    product = get_product_with_department_service(db, product_id)
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product department not found",
         )
     return product
 
